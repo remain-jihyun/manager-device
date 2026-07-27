@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { ClipboardCheck, ShieldCheck, MapPin, UserPlus, MessageCircle, Trash2, X } from 'lucide-react'
+import { ClipboardCheck, ShieldCheck, MapPin, UserPlus, MessageCircle, Trash2, Bug, Magnet, Scale, X } from 'lucide-react'
 import { useBadgeStore } from '@/store/badgeStore'
 
 const MENU_ITEMS = [
@@ -9,6 +9,10 @@ const MENU_ITEMS = [
   { path: '/register', icon: UserPlus, label: '등록', bg: 'bg-purple-50', color: 'text-purple-600', border: 'border-purple-100' },
   { path: '/chat', icon: MessageCircle, label: '채팅', bg: 'bg-sky-50', color: 'text-sky-500', border: 'border-sky-100' },
   { path: '/disposal', icon: Trash2, label: '폐기', bg: 'bg-red-50', color: 'text-red-500', border: 'border-red-100' },
+  // 안돈 — 발생 건은 대시보드가 아니라 이 단말에서만 확인 완료 처리한다
+  { path: '/andon/foreign', icon: Bug, label: '이물 안돈', bg: 'bg-rose-50', color: 'text-rose-600', border: 'border-rose-100' },
+  { path: '/andon/metal', icon: Magnet, label: '금속검출기 안돈', bg: 'bg-rose-50', color: 'text-rose-600', border: 'border-rose-100' },
+  { path: '/andon/weight', icon: Scale, label: '중량 선별기 안돈', bg: 'bg-rose-50', color: 'text-rose-600', border: 'border-rose-100' },
 ]
 
 interface Props {
@@ -61,7 +65,9 @@ export default function MenuSheet({ onClose }: Props) {
                   </span>
                 )}
                 <Icon size={26} className={color} />
-                <span className={`text-xs font-semibold ${color}`}>{label}</span>
+                <span className={`text-xs font-semibold text-center leading-tight px-1 ${color}`}>
+                  {label}
+                </span>
               </button>
             )
           })}

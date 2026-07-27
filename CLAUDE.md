@@ -21,3 +21,15 @@
 - 데이터는 mes-v2의 REST/WebSocket API를 통해 주고받는다. DB에 직접 붙지 않는다.
 - 필요한 데이터·필드가 API에 없으면 여기서 임시로 만들지 말고 **mes-v2에 추가**한다.
 - `field-device`는 이 프로젝트와 **다른 업무**를 하는 별도의 실행 단말이다. 서로의 코드를 섞지 않는다.
+
+## 안돈 확인 완료 (이 단말 전용 업무)
+
+- 안돈(이물 / 금속검출기 / 중량선별기) **확인 완료 처리는 이 단말에서만** 한다.
+  품질 대시보드에는 처리 버튼이 없고 발생 표시만 한다.
+- 확인은 **사진 1장 이상**이 있어야 성립한다. 서버가 사진 없는 확인을 400으로 거부한다.
+- 관련 파일: `src/api/andon.ts`, `src/store/andonStore.ts`, `src/hooks/useAndonPoller.ts`,
+  `src/pages/AndonPage.tsx`, 라우트 `/andon/:slug` (`foreign` | `metal` | `weight`)
+- `/menu` 상단 "안돈 현황"(`src/pages/MenuPage.tsx`)에서 3종의 미확인 건수·최근 발생을 바로 본다.
+  라벨·반·설비 문구는 API(`GET /api/andon/types`)에서 오고, 화면은 아이콘/순서만 갖는다.
+- 데이터 계약: `../mes-v2/docs/계약/API_계약_안돈.md` (mes-v2 소유). 유형·필드는 여기서 정의하지 않는다.
+- API 주소는 `VITE_MES_API_BASE` 로 바꿀 수 있다 (기본 `http://localhost:4000`).

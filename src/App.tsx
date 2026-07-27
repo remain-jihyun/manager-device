@@ -14,6 +14,7 @@ import DisposalPage from '@/pages/DisposalPage'
 import MenuPage from '@/pages/MenuPage'
 import InventoryPage from '@/pages/InventoryPage'
 import ReceivingPage from '@/pages/ReceivingPage'
+import AndonPage from '@/pages/AndonPage'
 
 function AuthRoute({ children }: { children: React.ReactNode }) {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn)
@@ -37,6 +38,8 @@ export default function App() {
         <Route path="/disposal" element={<AuthRoute><DisposalPage /></AuthRoute>} />
         <Route path="/inventory" element={<AuthRoute><InventoryPage /></AuthRoute>} />
         <Route path="/receiving" element={<AuthRoute><ReceivingPage /></AuthRoute>} />
+        {/* 안돈 확인 완료 처리 — slug: foreign | metal | weight */}
+        <Route path="/andon/:slug" element={<AuthRoute><AndonPage /></AuthRoute>} />
         <Route path="/menu" element={<AuthRoute><MenuPage /></AuthRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -460,7 +460,6 @@ export default function CCPPage() {
           const ui = STATUS_UI[status]
           const late = status === 'done' && isLateDone(task)
           const remaining = status === 'active' ? remainingSec(task, now) : null
-          const doneVals = taskValues[task.id]
 
           return (
             <div key={task.id} className={`bg-white rounded-2xl border overflow-hidden ${ui.cardBorder}`}>
@@ -481,31 +480,7 @@ export default function CCPPage() {
                     예정 {fmtTime(task.scheduledAt)}
                     {task.completedAt && ` · 완료 ${fmtTime(task.completedAt)}`}
                   </p>
-                  {status === 'done' && doneVals && Object.keys(doneVals).length > 0 && (
-                    <div className="flex gap-1 mt-2 flex-wrap">
-                      {CCP_CHECK_ITEMS.filter((it) => doneVals[it.id]?.trim()).map((it) => (
-                        <span key={it.id} className="text-[11px] bg-gray-50 border border-gray-200 text-gray-600 rounded-full px-2 py-0.5">
-                          {it.label} {doneVals[it.id]}
-                          {it.unit ?? ''}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  {status === 'done' && taskPhotos[task.id]?.length > 0 && (
-                    <div className="flex items-center gap-1.5 mt-2">
-                      {taskPhotos[task.id].slice(0, 4).map((src, i) => (
-                        <img
-                          key={i}
-                          src={src}
-                          alt={`점검 사진 ${i + 1}`}
-                          className="w-10 h-10 rounded-lg object-cover border border-gray-200"
-                        />
-                      ))}
-                      <span className="text-[11px] text-gray-400 ml-0.5 flex items-center gap-0.5">
-                        <Camera size={12} /> {taskPhotos[task.id].length}장
-                      </span>
-                    </div>
-                  )}
+                  {/* 이 디바이스는 완료/미완료만 표시. 작성한 점검 내용·사진은 mes-v2 CCP 이력에서만 확인. */}
                 </div>
                 <div className="flex flex-col items-end gap-1.5 ml-3 shrink-0">
                   <span

@@ -2,7 +2,12 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { Home, MessageCircle, LayoutGrid } from 'lucide-react'
 import { useBadgeStore } from '@/store/badgeStore'
 
-const MENU_PATHS = ['/inspection', '/ccp', '/closing', '/register', '/chat', '/disposal', '/inventory', '/receiving', '/menu']
+const MENU_PATHS = [
+  '/inspection', '/ccp', '/closing', '/register', '/chat', '/disposal',
+  '/inventory', '/receiving',
+  '/andon/foreign', '/andon/metal', '/andon/weight',
+  '/menu',
+]
 
 export default function BottomNav() {
   const navigate = useNavigate()
