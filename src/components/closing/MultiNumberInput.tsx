@@ -21,7 +21,7 @@ export default function MultiNumberInput({ fields, value, onChange }: MultiNumbe
             inputMode="numeric"
             value={value[field] ?? ''}
             onChange={(e) => handleChange(field, Number(e.target.value))}
-            className="w-14 border border-gray-200 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:border-green-800 bg-white"
+            className="input-ds-sm w-14 px-2 py-1.5 text-center"
             placeholder="0"
           />
         </div>

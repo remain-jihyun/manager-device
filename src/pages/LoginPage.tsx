@@ -1,10 +1,50 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MessageSquare, Check } from 'lucide-react'
-import { useAuthStore } from '@/store/authStore'
+import { MessageSquare, Check, Boxes } from 'lucide-react'
+import { useAuthStore, type User } from '@/store/authStore'
 
-// 카카오 로그인 성공 후 넘겨줄 임시 유저 (실서비스: 카카오 OAuth 응답)
-const KAKAO_USER = { id: 'kakao_123', name: '홍길동', team: '1반' }
+// 로그인 성공 후 넘겨줄 임시 유저 (실서비스: 카카오/구글 OAuth 응답 + mes-v2 사원정보)
+// 부서·직책·등급·사진은 실제 계정에서 채워질 자리다. 여기서 기준정보를 정의하는 게 아니다.
+//
+// 이 단말은 공용이다. **로그인 수단이 곧 역할**이다.
+//   카카오 로그인      → 반장(FOREMAN)   : 안돈 현장 확인 보고까지만
+//   이메일(Google) 로그인 → 사무직(OFFICE) : 안돈 최종 확인 완료 / 이슈 등록
+const KAKAO_USER: User = {
+  id: 'kakao_123',
+  name: '홍길동',
+  team: '조리반',
+  role: 'FOREMAN',
+  loginMethod: '카카오',
+  department: '조리반',
+  position: '반장',
+  grade: '현장',
+  // 폐기는 반 기준이라 담당 반을 함께 들고 간다 — 반장은 자기 반만 본다
+  wasteTeam: '조리반',
+}
+
+// 2026-08-20 — 자재반 반원용. 재고실사·입고검수·소모품 불출 3개만 쓴다.
+const MEMBER_USER: User = {
+  id: 'member_789',
+  name: '박자재',
+  team: '자재반',
+  role: 'MEMBER',
+  loginMethod: '카카오',
+  department: '자재반',
+  position: '반원',
+  grade: '현장',
+  wasteTeam: '자재반',
+}
+
+const GOOGLE_USER: User = {
+  id: 'google_456',
+  name: '김사무',
+  team: '사무직',
+  role: 'OFFICE',
+  loginMethod: '이메일',
+  department: '경영지원팀',
+  position: '사무관리자',
+  grade: '마스터',
+}
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -19,7 +59,13 @@ export default function LoginPage() {
   }
 
   const handleGoogleLogin = () => {
-    login({ id: 'google_456', name: '김사무', team: '사무직', googleLinked: true })
+    login({ ...GOOGLE_USER, googleLinked: true })
+    navigate('/', { replace: true })
+  }
+
+  /** 반원용(자재반) — 다른 역할과 같이 홈으로 들어간다. 메뉴만 3개로 제한된다. */
+  const handleMemberLogin = () => {
+    login({ ...MEMBER_USER, googleLinked: false })
     navigate('/', { replace: true })
   }
 
@@ -40,7 +86,7 @@ export default function LoginPage() {
   // ── 구글 계정 연동 단계 ──────────────────────────────
   if (linkStep) {
     return (
-      <div className="h-full flex flex-col bg-white px-6">
+      <div className="h-full flex flex-col bg-white screen-x">
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="w-full max-w-sm">
             <div className="flex items-center gap-2 mb-6 text-green-800">
@@ -51,16 +97,11 @@ export default function LoginPage() {
             <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-50 rounded-2xl mb-5">
               <MessageSquare size={26} className="text-blue-600" />
             </div>
-            <h1 className="text-[24px] font-bold text-gray-900 leading-tight">구글 계정 연동</h1>
-            <p className="text-gray-500 mt-2 text-sm leading-relaxed">
-              업무 메신저 <b className="text-gray-700">구글 챗(Google Chat)</b>을 사용하려면
-              회사 구글 계정을 한 번 연동해야 합니다.
-            </p>
-
+            <h1 className="text-[30px] font-bold text-gray-900 leading-tight">구글 계정 연동</h1>
             <button
               onClick={linkGoogle}
               disabled={linking}
-              className="mt-8 w-full flex items-center justify-center gap-3 bg-white active:bg-gray-50 disabled:opacity-60 text-gray-700 font-bold py-4 rounded-2xl text-[15px] border border-gray-200 transition-colors"
+              className="btn-ds btn-ds-outline gap-3 mt-8 disabled:opacity-60"
             >
               <GoogleIcon />
               {linking ? '연동 중...' : 'Google 계정 연동하기'}
@@ -80,28 +121,24 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-white px-6">
+    <div className="h-full flex flex-col bg-white screen-x">
       <div className="flex-1 flex flex-col items-center justify-center gap-0">
         <div className="w-full max-w-sm">
           <div className="mb-12">
             <div className="inline-flex items-center justify-center w-14 h-14 bg-green-900 rounded-2xl mb-5">
               <span className="text-white text-xl font-bold">M</span>
             </div>
-            <h1 className="text-[28px] font-bold text-gray-900 leading-tight">관리자 디바이스</h1>
+            <h1 className="text-[34px] font-bold text-gray-900 leading-tight">관리자 디바이스</h1>
             <p className="text-gray-400 mt-1.5">집반찬연구소 MES</p>
           </div>
 
           <button
             onClick={handleKakaoLogin}
-            className="w-full flex items-center justify-center gap-3 bg-[#FEE500] active:bg-[#E8D000] text-[#1A1A1A] font-bold py-4 rounded-2xl text-[15px] transition-colors"
+            className="btn-ds gap-3 bg-[#FEE500] active:bg-[#E8D000] text-[#1A1A1A]"
           >
             <KakaoIcon />
             카카오 로그인
           </button>
-
-          <p className="text-center text-xs text-gray-400 mt-3">
-            현장직: 집반찬연구소 임직원 카카오 계정으로 로그인
-          </p>
 
           {/* 구분선 */}
           <div className="flex items-center gap-3 my-6">
@@ -112,15 +149,22 @@ export default function LoginPage() {
 
           <button
             onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center gap-3 bg-white active:bg-gray-50 text-gray-700 font-bold py-4 rounded-2xl text-[15px] border border-gray-200 transition-colors"
+            className="btn-ds btn-ds-outline gap-3"
           >
             <GoogleIcon />
             Google로 로그인
           </button>
 
-          <p className="text-center text-xs text-gray-400 mt-3">
-            사무직: 회사 Google 계정으로 로그인
-          </p>
+          <div className="flex items-center gap-3 my-5">
+            <div className="flex-1 h-px bg-gray-100" />
+            <span className="text-xs text-gray-400">반원용</span>
+            <div className="flex-1 h-px bg-gray-100" />
+          </div>
+
+          <button onClick={handleMemberLogin} className="btn-ds btn-ds-outline gap-3">
+            <Boxes size={20} className="text-green-800" />
+            자재반 반원으로 시작
+          </button>
         </div>
       </div>
     </div>

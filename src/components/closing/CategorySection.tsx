@@ -36,7 +36,7 @@ export default function CategorySection({ category, items, answers, onAnswerChan
   return (
     <div className="mb-3">
       <div className={`flex items-center justify-between px-4 py-2 ${getCategoryStyle(category)}`} style={{ minHeight: '36px' }}>
-        <span className="text-[14px] font-bold">{category}</span>
+        <span className="text-[18px] font-bold">{category}</span>
         <span className="text-xs font-medium opacity-70">{answeredCount}/{items.length}</span>
       </div>
       <div className="bg-white">

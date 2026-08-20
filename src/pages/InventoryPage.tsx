@@ -281,15 +281,15 @@ export default function InventoryPage() {
               <ChevronLeft size={24} strokeWidth={2} />
             </button>
             <div className="flex-1 text-center min-w-0">
-              <p className="text-[17px] font-bold text-gray-900 truncate">
+              <p className="text-[22px] font-bold text-gray-900 truncate">
                 {item.name}
                 {item.seasonEnded && (
-                  <span className="ml-1.5 align-middle px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-700">
+                  <span className="ml-1.5 align-middle px-1.5 py-0.5 rounded-md text-[14px] font-bold bg-amber-100 text-amber-700">
                     시즌종료
                   </span>
                 )}
               </p>
-              <p className="text-[11px] text-gray-400">
+              <p className="text-[16px] text-gray-400">
                 {warehouse.name} · {item.code}
                 {item.volume ? ` · 용량 ${item.volume}${item.volumeUnit ?? ''}` : ''}
               </p>
@@ -315,7 +315,7 @@ export default function InventoryPage() {
               {mode === 'daily' ? '일·주간 실사' : `${activeRound}차 실사`}
             </span>
             <span className="flex items-center gap-1.5 text-xs text-gray-500">
-              <span className="w-6 h-6 rounded-full bg-green-900 text-white flex items-center justify-center text-[11px] font-bold">
+              <span className="w-6 h-6 rounded-full bg-green-900 text-white flex items-center justify-center text-[16px] font-bold">
                 {workerInitial(operator)}
               </span>
               {operator}
@@ -344,7 +344,7 @@ export default function InventoryPage() {
               </span>
               {w1 && (
                 <span className="flex items-center gap-1 text-blue-500">
-                  <span className="w-5 h-5 rounded-full bg-blue-200 text-blue-800 flex items-center justify-center text-[10px] font-bold">
+                  <span className="w-5 h-5 rounded-full bg-blue-200 text-blue-800 flex items-center justify-center text-[14px] font-bold">
                     {workerInitial(w1)}
                   </span>
                   {w1} 담당
@@ -419,7 +419,7 @@ export default function InventoryPage() {
         <div className="shrink-0 px-4 pt-3 pb-5 bg-white border-t border-gray-100 space-y-2">
           <button
             onClick={handleConfirm}
-            className="w-full py-4 bg-green-900 text-white rounded-2xl text-[16px] font-bold active:bg-green-800 flex items-center justify-center gap-2"
+            className="w-full py-4 bg-green-900 text-white rounded-2xl text-[21px] font-bold active:bg-green-800 flex items-center justify-center gap-2"
           >
             <CheckCircle2 size={20} />
             확정 ({actual} {item.unit})
@@ -463,7 +463,7 @@ export default function InventoryPage() {
                 </button>
                 <button
                   onClick={() => { commit(item, modal.actual, true); setModal(null) }}
-                  className="flex-1 py-3 bg-amber-500 text-white rounded-xl text-sm font-bold active:bg-amber-600"
+                  className="flex-1 py-3 bg-amber-500 text-gray-950 rounded-xl text-sm font-bold active:bg-amber-600"
                 >
                   확인하고 진행
                 </button>
@@ -487,7 +487,7 @@ export default function InventoryPage() {
 
   return (
     <div className="relative flex flex-col h-full bg-gray-50">
-      <TopBar title="재고실사" />
+      <TopBar title="재고실사" showBack backTo="/menu" />
 
       {/* 모드 토글 + 작업자 (상단 최소화) */}
       <div className="bg-white border-b border-gray-100 px-3 py-2 shrink-0 flex items-center gap-2">
@@ -540,7 +540,7 @@ export default function InventoryPage() {
                 }`}
               >
                 {w.name}
-                <span className={`ml-1.5 text-[11px] font-bold ${active ? 'text-green-200' : allDone ? 'text-green-600' : 'text-gray-400'}`}>
+                <span className={`ml-1.5 text-[16px] font-bold ${active ? 'text-green-200' : allDone ? 'text-green-600' : 'text-gray-400'}`}>
                   {total === 0 ? '0' : `${done}/${total}`}
                 </span>
               </button>
@@ -553,7 +553,7 @@ export default function InventoryPage() {
       <div className="bg-white border-b border-gray-100 px-4 py-2 shrink-0 flex items-center gap-2">
         <span className="text-base font-bold text-gray-900">{warehouse.name}</span>
         {warehouse.temperatureName && (
-          <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${TEMP_BADGE[warehouse.temperatureName] ?? 'bg-gray-100 text-gray-600'}`}>
+          <span className={`px-2 py-0.5 rounded-full text-[16px] font-bold ${TEMP_BADGE[warehouse.temperatureName] ?? 'bg-gray-100 text-gray-600'}`}>
             {warehouse.temperatureName}
           </span>
         )}
@@ -581,7 +581,7 @@ export default function InventoryPage() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="품목명·코드 검색"
-              className="w-full pl-10 pr-9 py-2.5 bg-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-200"
+              className="input-ds-search"
             />
             {search && (
               <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -632,13 +632,13 @@ export default function InventoryPage() {
                       : <span className="text-xs text-gray-400 font-bold">{idx + 1}</span>}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[15px] font-bold text-gray-900 flex items-center gap-1.5">
+                    <p className="text-[19px] font-bold text-gray-900 flex items-center gap-1.5">
                       {item.name}
                       {item.seasonEnded && (
-                        <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-700">시즌종료</span>
+                        <span className="px-1.5 py-0.5 rounded-md text-[14px] font-bold bg-amber-100 text-amber-700">시즌종료</span>
                       )}
                       {needRecheck && (
-                        <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-red-100 text-red-600">재확인</span>
+                        <span className="px-1.5 py-0.5 rounded-md text-[14px] font-bold bg-red-100 text-red-600">재확인</span>
                       )}
                     </p>
                     <p className="text-xs text-gray-400 mt-0.5 truncate">
@@ -653,14 +653,14 @@ export default function InventoryPage() {
                   </div>
                   <div className="flex flex-col items-end gap-1 shrink-0">
                     {w && (
-                      <span className="flex items-center gap-1 text-[10px] text-gray-400">
-                        <span className="w-4 h-4 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-[9px] font-bold">
+                      <span className="flex items-center gap-1 text-[14px] text-gray-400">
+                        <span className="w-4 h-4 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-[13px] font-bold">
                           {workerInitial(w)}
                         </span>
                         {w}
                       </span>
                     )}
-                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${done ? (activeRound === 1 ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-700') : 'bg-gray-100 text-gray-400'}`}>
+                    <span className={`text-[16px] font-bold px-2 py-0.5 rounded-full ${done ? (activeRound === 1 ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-700') : 'bg-gray-100 text-gray-400'}`}>
                       {done ? '완료' : '미실사'}
                     </span>
                   </div>
@@ -671,7 +671,7 @@ export default function InventoryPage() {
             {/* 비활성 품목 (월말 2차: 1차 미완료) */}
             {mode === 'monthly' && step === 2 && inactiveItems.length > 0 && (
               <>
-                <div className="px-4 py-2 bg-gray-50 text-[11px] font-bold text-gray-400 flex items-center gap-1">
+                <div className="px-4 py-2 bg-gray-50 text-[16px] font-bold text-gray-400 flex items-center gap-1">
                   <Lock size={12} /> 1차 미완료 — 2차 불가 ({inactiveItems.length})
                 </div>
                 {inactiveItems.map(item => (
@@ -680,10 +680,10 @@ export default function InventoryPage() {
                       <Lock size={14} className="text-gray-300" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[15px] font-bold text-gray-400">{item.name}</p>
+                      <p className="text-[19px] font-bold text-gray-400">{item.name}</p>
                       <p className="text-xs text-gray-300">1차 실사 대기</p>
                     </div>
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">비활성</span>
+                    <span className="text-[16px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">비활성</span>
                   </div>
                 ))}
               </>
@@ -704,14 +704,14 @@ export default function InventoryPage() {
                 if (first) openForm(first)
               }}
               disabled={items.filter(isActive).length === 0}
-              className="flex-1 py-3.5 rounded-2xl bg-green-900 text-white text-[15px] font-bold active:bg-green-800 disabled:bg-gray-200 disabled:text-gray-400"
+              className="flex-1 py-3.5 rounded-2xl bg-green-900 text-white text-[19px] font-bold active:bg-green-800 disabled:bg-gray-200 disabled:text-gray-400"
             >
               재고 실사 진행
             </button>
             {mode === 'daily' && (
               <button
                 onClick={() => setModal({ kind: 'finalize' })}
-                className="flex-1 py-3.5 rounded-2xl bg-amber-500 text-white text-[15px] font-bold active:bg-amber-600"
+                className="flex-1 py-3.5 rounded-2xl bg-amber-500 text-gray-950 text-[19px] font-bold active:bg-amber-600"
               >
                 재고 확정
               </button>
@@ -721,7 +721,7 @@ export default function InventoryPage() {
           // 월말 재고 확정 단계
           <button
             onClick={() => setModal({ kind: 'finalize' })}
-            className="w-full py-3.5 rounded-2xl bg-amber-500 text-white text-[15px] font-bold active:bg-amber-600"
+            className="w-full py-3.5 rounded-2xl bg-amber-500 text-gray-950 text-[19px] font-bold active:bg-amber-600"
           >
             최종 재고 확정 (차이 {diffItems.length}건 검토)
           </button>
@@ -765,7 +765,7 @@ export default function InventoryPage() {
               </button>
               <button
                 onClick={mode === 'daily' ? finalizeDaily : finalizeMonthly}
-                className="flex-1 py-3 bg-amber-500 text-white rounded-xl text-sm font-bold active:bg-amber-600"
+                className="flex-1 py-3 bg-amber-500 text-gray-950 rounded-xl text-sm font-bold active:bg-amber-600"
               >
                 확정
               </button>
@@ -816,17 +816,17 @@ function ConfirmStep({
       <div className="px-4 py-3 grid grid-cols-3 gap-2 border-b border-gray-100">
         <div className="text-center">
           <p className="text-xl font-bold text-green-700">{autoConfirmed.length}</p>
-          <p className="text-[11px] text-gray-400">자동확정(1차=2차)</p>
+          <p className="text-[16px] text-gray-400">자동확정(1차=2차)</p>
         </div>
         <div className="text-center">
           <p className="text-xl font-bold text-red-500">{diffItems.length}</p>
-          <p className="text-[11px] text-gray-400">차이 품목</p>
+          <p className="text-[16px] text-gray-400">차이 품목</p>
         </div>
         <div className="text-center">
           <p className={`text-lg font-bold tabular-nums ${totalAmtDiff >= 0 ? 'text-green-700' : 'text-red-500'}`}>
             {totalAmtDiff >= 0 ? '+' : ''}{won(totalAmtDiff)}
           </p>
-          <p className="text-[11px] text-gray-400">예상대비 금액</p>
+          <p className="text-[16px] text-gray-400">예상대비 금액</p>
         </div>
       </div>
 
@@ -835,7 +835,7 @@ function ConfirmStep({
         <p className="text-center text-gray-400 text-sm py-10">차이 품목이 없습니다 — 전체 자동확정 가능</p>
       ) : (
         <div className="divide-y divide-gray-100">
-          <div className="px-4 py-2 bg-amber-50 text-[11px] font-bold text-amber-700">
+          <div className="px-4 py-2 bg-amber-50 text-[16px] font-bold text-amber-700">
             1차 ≠ 2차 — 검토 후 확정값 선택
           </div>
           {diffItems.map(item => {
@@ -848,11 +848,11 @@ function ConfirmStep({
             return (
               <div key={item.code} className="px-4 py-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-[15px] font-bold text-gray-900 flex items-center gap-1.5">
+                  <p className="text-[19px] font-bold text-gray-900 flex items-center gap-1.5">
                     {item.name}
-                    {recheck[k] && <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-red-100 text-red-600">재확인</span>}
+                    {recheck[k] && <span className="px-1.5 py-0.5 rounded-md text-[14px] font-bold bg-red-100 text-red-600">재확인</span>}
                   </p>
-                  <span className="text-[11px] text-gray-400">예상 {expected}{item.unit}</span>
+                  <span className="text-[16px] text-gray-400">예상 {expected}{item.unit}</span>
                 </div>
                 <div className="flex gap-2 mt-2">
                   {([['1차', r1], ['2차', r2]] as const).map(([label, val]) => {
@@ -866,9 +866,9 @@ function ConfirmStep({
                           picked ? 'border-green-600 bg-green-50' : 'border-gray-200 bg-white'
                         }`}
                       >
-                        <p className="text-[11px] text-gray-400">{label}값</p>
+                        <p className="text-[16px] text-gray-400">{label}값</p>
                         <p className="text-lg font-bold text-gray-900 tabular-nums">{val}{item.unit}</p>
-                        <p className={`text-[10px] font-bold ${amtDiff >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                        <p className={`text-[14px] font-bold ${amtDiff >= 0 ? 'text-green-600' : 'text-red-500'}`}>
                           {amtDiff >= 0 ? '+' : ''}{won(amtDiff)}원
                         </p>
                       </button>
@@ -876,7 +876,7 @@ function ConfirmStep({
                   })}
                 </div>
                 {conf !== undefined && (
-                  <p className="text-[11px] text-green-700 font-bold mt-1.5">확정값 {conf}{item.unit}</p>
+                  <p className="text-[16px] text-green-700 font-bold mt-1.5">확정값 {conf}{item.unit}</p>
                 )}
               </div>
             )

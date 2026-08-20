@@ -23,9 +23,15 @@ interface PurchaseItem {
 interface InspectionResult {
   id: string
   receivedQty: number
-  status: '대기' | '검수완료' | '수량변경' | '반품'
+  status: '대기' | '검수완료' | '수량변경' | '반품' | '불량'
   diffType?: '미입고' | '반품' | '기타' | '추가입고'
   reason?: string
+  /** 품질 검수 결과 — 들어온 수량이 전부 정상인지 */
+  qualityOk?: boolean
+  /** 불량 수량 (qualityOk = false 일 때만) */
+  defectQty?: number
+  /** 불량 사유 (qualityOk = false 일 때 필수) */
+  defectReason?: string
 }
 
 const PURCHASE_ITEMS: PurchaseItem[] = [
@@ -58,6 +64,7 @@ const STATUS_STYLE: Record<string, string> = {
   '검수완료': 'bg-green-100 text-green-700',
   '수량변경': 'bg-orange-100 text-orange-700',
   '반품':     'bg-red-100 text-red-700',
+  '불량':     'bg-red-100 text-red-700',
 }
 
 // 품목 규격 요약 (재고실사와 동일 기준: 품목단위 · 용량 · 용량단위 · 박스당 수량)
@@ -79,6 +86,10 @@ export default function ReceivingPage() {
   const [receivedQty, setReceivedQty] = useState('')
   const [diffType, setDiffType] = useState<'미입고' | '반품' | '기타' | '추가입고' | ''>('')
   const [reason, setReason] = useState('')
+  // 품질 검수 — "들어온 수량이 전부 정상인가요?" 네 → 끝 / 아니오 → 불량 수량·사유
+  const [qualityOk, setQualityOk] = useState<boolean | null>(null)
+  const [defectQty, setDefectQty] = useState('')
+  const [defectReason, setDefectReason] = useState('')
 
   const allItems = useMemo(() => [...PURCHASE_ITEMS, ...extraItems], [extraItems])
 
@@ -110,6 +121,9 @@ export default function ReceivingPage() {
     setReceivedQty(prev ? String(prev.receivedQty) : (item.extra ? '' : String(item.orderQty)))
     setDiffType(prev?.diffType ?? '')
     setReason(prev?.reason ?? '')
+    setQualityOk(prev?.qualityOk ?? null)
+    setDefectQty(prev?.defectQty ? String(prev.defectQty) : '')
+    setDefectReason(prev?.defectReason ?? '')
     setView('form')
   }
 
@@ -117,9 +131,11 @@ export default function ReceivingPage() {
     if (!selectedItem) return
     const qty = receivedQty === '' ? selectedItem.orderQty : Number(receivedQty)
     const diff = qty - selectedItem.orderQty
+    const bad = qualityOk === false ? Number(defectQty) || 0 : 0
 
     let status: InspectionResult['status'] = '검수완료'
     if (diffType === '반품' || qty === 0) status = '반품'
+    else if (bad > 0) status = '불량'
     else if (diff !== 0) status = '수량변경'
 
     setResults(prev => ({
@@ -130,6 +146,9 @@ export default function ReceivingPage() {
         status,
         diffType: diff !== 0 ? (diffType || undefined) : undefined,
         reason: diff !== 0 && reason.trim() ? reason.trim() : undefined,
+        qualityOk: qty > 0 ? qualityOk ?? undefined : undefined,
+        defectQty: bad > 0 ? bad : undefined,
+        defectReason: bad > 0 && defectReason.trim() ? defectReason.trim() : undefined,
       },
     }))
     setScannedId(null)
@@ -184,7 +203,18 @@ export default function ReceivingPage() {
     const isMinus = diff < 0
     // 차이 발생 시 유형 선택 필수. 반품(또는 증가분)은 사유 입력 필수.
     const needsReason = (isMinus && diffType === '반품') || (!isMinus && hasDiff)
-    const canSave = !hasDiff || (diffType !== '' && (!needsReason || reason.trim() !== ''))
+    const qtyOk = !hasDiff || (diffType !== '' && (!needsReason || reason.trim() !== ''))
+
+    // 품질 검수: 들어온 수량이 있으면 정상/불량 답이 있어야 저장된다.
+    // 불량이면 불량 수량(1~입고수량)과 사유가 모두 필요하다.
+    const bad = Number(defectQty) || 0
+    const needsQuality = qty > 0
+    const qualityDone =
+      !needsQuality ||
+      qualityOk === true ||
+      (qualityOk === false && bad > 0 && bad <= qty && defectReason.trim() !== '')
+
+    const canSave = qtyOk && qualityDone
 
     return (
       <div className="flex flex-col h-full bg-gray-50">
@@ -193,8 +223,8 @@ export default function ReceivingPage() {
             <ChevronLeft size={24} strokeWidth={2} />
           </button>
           <div className="flex-1 text-center">
-            <p className="text-[16px] font-bold text-gray-900">{selectedItem.name}</p>
-            <p className="text-[11px] text-gray-400">{selectedItem.code} · {selectedItem.supplier}</p>
+            <p className="text-[21px] font-bold text-gray-900">{selectedItem.name}</p>
+            <p className="text-[16px] text-gray-400">{selectedItem.code} · {selectedItem.supplier}</p>
           </div>
           <div className="w-8" />
         </div>
@@ -202,9 +232,9 @@ export default function ReceivingPage() {
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
           {/* 품목 규격 (재고실사와 동일 기준) */}
           <div className="bg-white rounded-2xl border border-gray-200 px-4 py-3">
-            <p className="text-[11px] text-gray-400 mb-1">품목 규격</p>
+            <p className="text-[16px] text-gray-400 mb-1">품목 규격</p>
             <p className="text-sm font-bold text-gray-700">{specText(selectedItem)}</p>
-            <p className="text-[11px] text-gray-400 mt-1">바코드 {selectedItem.barcode}</p>
+            <p className="text-[16px] text-gray-400 mt-1">바코드 {selectedItem.barcode}</p>
           </div>
 
           {/* 발주 정보 (수정 불가) */}
@@ -216,14 +246,14 @@ export default function ReceivingPage() {
             </div>
             <div className="grid grid-cols-2 divide-x divide-gray-100">
               <div className="px-4 py-4 text-center">
-                <p className="text-[10px] text-gray-400 mb-1">발주 수량</p>
+                <p className="text-[14px] text-gray-400 mb-1">발주 수량</p>
                 <p className="text-2xl font-bold text-gray-700 tabular-nums">{selectedItem.orderQty}</p>
-                <p className="text-[10px] text-gray-400 mt-0.5">{selectedItem.unit}</p>
+                <p className="text-[14px] text-gray-400 mt-0.5">{selectedItem.unit}</p>
               </div>
               <div className="px-4 py-4 text-center">
-                <p className="text-[10px] text-gray-400 mb-1">단가</p>
+                <p className="text-[14px] text-gray-400 mb-1">단가</p>
                 <p className="text-lg font-bold text-gray-700 tabular-nums">{selectedItem.unitPrice.toLocaleString()}</p>
-                <p className="text-[10px] text-gray-400 mt-0.5">원/{selectedItem.unit}</p>
+                <p className="text-[14px] text-gray-400 mt-0.5">원/{selectedItem.unit}</p>
               </div>
             </div>
           </div>
@@ -293,12 +323,96 @@ export default function ReceivingPage() {
                       onChange={e => setReason(e.target.value)}
                       placeholder={diffType === '반품' ? '반품 사유를 입력하세요 (필수)' : '사유를 입력하세요'}
                       rows={3}
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:border-green-800"
+                      className="textarea-ds"
                     />
                   </div>
                 )}
                 {isMinus && diffType === '미입고' && (
-                  <p className="text-[11px] text-gray-400">미입고 수량은 사무실(MES)에서 집계됩니다.</p>
+                  <p className="text-[16px] text-gray-400">
+                    미입고 수량은 사무실(MES)에서 집계·교정됩니다.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 품질 검수 — 수량 확인 다음 단계.
+              "N개가 정상인가요?" 네 → 끝 / 아니오 → 불량 갯수와 이유 */}
+          {needsQuality && (
+            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
+                <p className="text-xs font-bold text-gray-500">품질 검수</p>
+              </div>
+              <div className="px-4 py-4 space-y-3">
+                <p className="text-sm font-bold text-gray-800 text-center">
+                  입고된 <span className="text-green-900 tabular-nums">{qty}</span>
+                  {selectedItem.unit} 모두 정상인가요?
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { setQualityOk(true); setDefectQty(''); setDefectReason('') }}
+                    className={`flex-1 py-3.5 rounded-xl text-sm font-bold border transition-colors ${
+                      qualityOk === true
+                        ? 'bg-green-900 text-white border-green-900'
+                        : 'bg-white text-gray-600 border-gray-200'
+                    }`}
+                  >
+                    네 (전량 정상)
+                  </button>
+                  <button
+                    onClick={() => setQualityOk(false)}
+                    className={`flex-1 py-3.5 rounded-xl text-sm font-bold border transition-colors ${
+                      qualityOk === false
+                        ? 'bg-red-500 text-white border-red-500'
+                        : 'bg-white text-gray-600 border-gray-200'
+                    }`}
+                  >
+                    아니오 (불량 있음)
+                  </button>
+                </div>
+
+                {qualityOk === false && (
+                  <div className="space-y-3 pt-1">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-2">
+                        불량 수량 <span className="text-red-500">*</span>
+                      </p>
+                      <div className="flex items-baseline gap-2">
+                        <input
+                          type="number"
+                          min={1}
+                          max={qty}
+                          value={defectQty}
+                          onChange={e => setDefectQty(e.target.value)}
+                          placeholder="0"
+                          className="input-ds flex-1 text-right tabular-nums"
+                        />
+                        <span className="text-sm text-gray-400 shrink-0">{selectedItem.unit}</span>
+                      </div>
+                      {bad > qty && (
+                        <p className="text-[16px] font-bold text-red-500 mt-1">
+                          불량 수량은 입고 수량({qty}{selectedItem.unit})을 넘을 수 없습니다.
+                        </p>
+                      )}
+                      {bad > 0 && bad <= qty && (
+                        <p className="text-[16px] text-gray-400 mt-1 tabular-nums">
+                          정상 {qty - bad}{selectedItem.unit} · 불량 {bad}{selectedItem.unit}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-2">
+                        불량 사유 <span className="text-red-500">*</span>
+                      </p>
+                      <textarea
+                        value={defectReason}
+                        onChange={e => setDefectReason(e.target.value)}
+                        placeholder="예) 포장 파손 3, 변색 2 — 해당 수량 반품 요청"
+                        rows={3}
+                        className="textarea-ds"
+                      />
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -310,10 +424,16 @@ export default function ReceivingPage() {
           <button
             onClick={handleSave}
             disabled={!canSave}
-            className="w-full py-4 bg-green-900 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-2xl text-[15px] font-bold active:bg-green-800 flex items-center justify-center gap-2"
+            className="w-full py-4 bg-green-900 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-2xl text-[19px] font-bold active:bg-green-800 flex items-center justify-center gap-2"
           >
             <CheckCircle2 size={18} />
-            검수 완료
+            {!qtyOk
+              ? '수량 차이 유형과 사유를 입력해 주세요'
+              : needsQuality && qualityOk === null
+                ? '품질 검수 결과를 선택해 주세요'
+                : !qualityDone
+                  ? '불량 수량과 사유를 입력해 주세요'
+                  : '검수 완료'}
           </button>
         </div>
       </div>
@@ -330,21 +450,21 @@ export default function ReceivingPage() {
 
   return (
     <div className="relative flex flex-col h-full bg-gray-50">
-      <TopBar title="입고 검수" />
+      <TopBar title="입고 검수" showBack backTo="/menu" />
 
       {/* 요약 */}
       <div className="flex bg-white border-b border-gray-100 shrink-0">
         <div className="flex-1 text-center py-3 border-r border-gray-100">
           <p className="text-xl font-bold text-green-700">{totalDone}</p>
-          <p className="text-[11px] text-gray-400">검수 완료</p>
+          <p className="text-[16px] text-gray-400">검수 완료</p>
         </div>
         <div className="flex-1 text-center py-3 border-r border-gray-100">
           <p className="text-xl font-bold text-gray-400">{allItems.length - totalDone}</p>
-          <p className="text-[11px] text-gray-400">대기</p>
+          <p className="text-[16px] text-gray-400">대기</p>
         </div>
         <div className="flex-1 text-center py-3">
           <p className="text-xl font-bold text-gray-700">{allItems.length}</p>
-          <p className="text-[11px] text-gray-400">전체</p>
+          <p className="text-[16px] text-gray-400">전체</p>
         </div>
       </div>
 
@@ -369,7 +489,7 @@ export default function ReceivingPage() {
                 }`}
               >
                 {supplier}
-                {done && <span className="text-[9px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">완료</span>}
+                {done && <span className="text-[13px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">완료</span>}
               </button>
             )
           })}
@@ -439,9 +559,9 @@ export default function ReceivingPage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-gray-900 flex items-center gap-1.5">
                     {item.name}
-                    {item.extra && <span className="text-[9px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full shrink-0">추가</span>}
+                    {item.extra && <span className="text-[13px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full shrink-0">추가</span>}
                   </p>
-                  <p className="text-[11px] text-gray-400 mt-0.5">{specText(item)}</p>
+                  <p className="text-[16px] text-gray-400 mt-0.5">{specText(item)}</p>
                   <p className="text-xs text-gray-400 mt-0.5">
                     {item.code} · 발주 {item.orderQty}{item.unit}
                     {result && diff !== null && diff !== 0 && (
@@ -454,11 +574,17 @@ export default function ReceivingPage() {
                     )}
                   </p>
                   {result?.reason && (
-                    <p className="text-[10px] text-amber-600 mt-0.5 truncate">사유: {result.reason}</p>
+                    <p className="text-[14px] text-amber-600 mt-0.5 truncate">사유: {result.reason}</p>
                   )}
+                  {result?.defectQty ? (
+                    <p className="text-[14px] text-red-500 mt-0.5 truncate">
+                      불량 {result.defectQty}{item.unit}
+                      {result.defectReason ? ` · ${result.defectReason}` : ''}
+                    </p>
+                  ) : null}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${STATUS_STYLE[status]}`}>
+                  <span className={`text-[16px] font-bold px-2 py-0.5 rounded-full ${STATUS_STYLE[status]}`}>
                     {status}
                   </span>
                   <ChevronRight size={14} className="text-gray-300" />
@@ -476,7 +602,7 @@ export default function ReceivingPage() {
             <button onClick={() => setShowSearch(false)} className="p-1 text-gray-800">
               <X size={22} strokeWidth={2} />
             </button>
-            <div className="flex-1 flex items-center gap-2 bg-gray-100 rounded-xl px-3 py-2">
+            <div className="flex-1 flex items-center gap-2 bg-white border border-gray-250 rounded-lg px-4 h-11">
               <Search size={16} className="text-gray-400 shrink-0" />
               <input
                 value={searchQuery}
@@ -504,7 +630,7 @@ export default function ReceivingPage() {
                 >
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-gray-900">{m.name}</p>
-                    <p className="text-[11px] text-gray-400 mt-0.5">품목 {m.unit} · 용량 {m.capacity}{m.capacityUnit} · 박스당 {m.boxQty}</p>
+                    <p className="text-[16px] text-gray-400 mt-0.5">품목 {m.unit} · 용량 {m.capacity}{m.capacityUnit} · 박스당 {m.boxQty}</p>
                     <p className="text-xs text-gray-400 mt-0.5">{m.code} · {m.barcode}</p>
                   </div>
                   <div className="w-8 h-8 rounded-full bg-green-900 text-white flex items-center justify-center shrink-0">

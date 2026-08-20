@@ -134,7 +134,7 @@ export default function RegisterPage() {
 
   return (
     <div className="relative flex flex-col bg-gray-50 min-h-full">
-      <TopBar title="인원 등록" />
+      <TopBar title="인원 등록" showBack backTo="/menu" />
 
       {toast && (
         <div className="absolute top-16 left-4 right-4 z-50 bg-green-900 text-white text-sm font-bold px-4 py-3 rounded-2xl shadow-lg flex items-center gap-2">
@@ -147,7 +147,7 @@ export default function RegisterPage() {
           <>
             <button
               onClick={() => setShowForm(true)}
-              className="w-full flex items-center justify-center gap-2 bg-green-900 text-white font-bold py-4 rounded-2xl text-[15px] active:bg-green-800"
+              className="w-full flex items-center justify-center gap-2 bg-green-900 text-white font-bold py-4 rounded-2xl text-[19px] active:bg-green-800"
             >
               <UserPlus size={20} />
               인원 등록
@@ -230,7 +230,7 @@ export default function RegisterPage() {
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
                       placeholder="이름으로 검색"
-                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-2xl text-sm bg-white focus:outline-none focus:border-green-800"
+                      className="input-ds-search"
                     />
                   </div>
 
@@ -255,7 +255,7 @@ export default function RegisterPage() {
                           <p className="text-xs text-gray-400 mt-0.5">{maskPhone(p.phone)}</p>
                         </div>
                         {p.nfcId && (
-                          <span className="text-[11px] font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg shrink-0">등록됨</span>
+                          <span className="text-[16px] font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg shrink-0">등록됨</span>
                         )}
                       </button>
                     ))}

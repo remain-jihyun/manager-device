@@ -1,5 +1,204 @@
 @import "tailwindcss";
 
+/* ────────────────────────────────────────────────────────────────────────────
+ * Pretendard — 디자인시스템 기본 서체 · 자체 호스팅 (CDN 의존 없음)
+ * 원본: github.com/orioncactus/pretendard v1.3.9 · SIL OFL 1.1
+ *       라이선스 전문은 public/fonts/LICENSE.txt
+ * 가변 폰트 한 파일로 45~920 전 굵기를 커버한다.
+ * 서체 스택이 'Pretendard' 를 먼저 찾는 화면도 있어 두 이름을 같은 파일로
+ * 선언한다 — 브라우저는 파일을 한 번만 내려받는다.
+ * ────────────────────────────────────────────────────────────────────────── */
+@font-face {
+  font-family: "Pretendard Variable";
+  font-weight: 45 920;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/PretendardVariable.woff2") format("woff2-variations");
+}
+@font-face {
+  font-family: "Pretendard";
+  font-weight: 45 920;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/PretendardVariable.woff2") format("woff2-variations");
+}
+
+@layer base {
+  /* Tailwind v4 는 `border` 만 쓰면 선을 currentColor(=본문 글자색)로 그린다.
+     이 앱 화면들은 v3 관행대로 `border` 만 쓴 곳이 많아 선이 까맣게 나왔다.
+     DS 라인색(gray/200 #E5E5E5)을 기본 테두리색으로 둔다 — 화면에서 선 색을 새로 만들지 않는다. */
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-gray-200);
+  }
+}
+
+/* ============================================================
+   집반찬연구소 App Design System
+   출처: Figma "[AI] 앱 디자인시스템" (JaaZot08P8yzSpt8yp5Otq)
+        원본 분석: "[AI] 집반찬연구소 리뉴얼" (640AQgEweSAaKFEvY9ws2B)
+
+   기존 화면의 유틸리티 클래스(bg-green-900, text-gray-400 …)를
+   그대로 둔 채, 각 색상 램프의 "값"만 디자인시스템 값으로 교체한다.
+   → 구조·데이터·레이아웃 무변경, 스타일만 적용.
+   ============================================================ */
+@theme {
+  /* ---------- Font ---------- */
+  --font-sans: "Pretendard Variable", "Pretendard", -apple-system,
+    BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+
+  /* ---------- Type scale (DS type ramp) ----------
+   * 2026-08-21 — 현장에서 글자가 작다는 지적이 이어져 램프를 한 번 더 키웠다.
+   * **본문은 최소 16px** 이 되도록 가장 작은 단계(xs)를 16 으로 올렸고,
+   * 타이틀·서브타이틀은 본문과 확실히 구분되게 더 크게 벌렸다.
+   * 클래스는 그대로 쓰면 된다 — 화면마다 폰트 크기를 따로 지정하지 않는다.
+   * (2026-08-20 값: 14 / 16 / 18 / 20 / 23 / 27 / 31 / 36)
+   */
+  --text-xs: 16px;            /* 본문 최소 — 보조 설명·메타 */
+  --text-xs--line-height: 1.4;
+  --text-sm: 18px;            /* body/body400-r  */
+  --text-sm--line-height: 1.5;
+  --text-base: 20px;          /* body/body200-r  */
+  --text-base--line-height: 1.4;
+  --text-lg: 24px;            /* subtitle/subtitle400-b */
+  --text-lg--line-height: 1.25;
+  --text-xl: 28px;            /* subtitle/subtitle300-b */
+  --text-xl--line-height: 1.2;
+  --text-2xl: 32px;           /* display/display500-b */
+  --text-2xl--line-height: 1.2;
+  --text-3xl: 36px;
+  --text-3xl--line-height: 1.15;
+  --text-4xl: 42px;           /* display/display400-b */
+  --text-4xl--line-height: 1.1;
+
+  /* ---------- Radius (DS: card 12 / control 10 / small 8·6·4) ---------- */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+  --radius-2xl: 12px;
+  --radius-3xl: 16px;
+  --radius-4xl: 20px;
+
+  /* ---------- Brand (semantic) ---------- */
+  --color-brand: #0d5611;          /* brand/green-primary */
+  --color-brand-press: #0a420d;    /* brand/green-click   */
+  --color-brand-line: #cadacb;     /* brand/green-line    */
+  --color-brand-soft: #f3f6f3;     /* brand/green-light   */
+  --color-brand-tonal: #ebf3ef;    /* green-gray/04       */
+
+  /* ---------- Neutral ramp = DS zip gray ---------- */
+  --color-gray-50: #fafafa;
+  --color-gray-100: #f5f5f5;
+  --color-gray-150: #efefef;
+  --color-gray-200: #e5e5e5;
+  --color-gray-250: #d9d9d9;
+  --color-gray-300: #d4d4d4;
+  --color-gray-350: #cfcfcf;
+  --color-gray-400: #a3a3a3;
+  --color-gray-450: #939393;
+  --color-gray-500: #757575;
+  --color-gray-600: #525252;
+  --color-gray-700: #434343;
+  --color-gray-750: #333333;
+  --color-gray-800: #262626;
+  --color-gray-900: #171717;
+  --color-gray-950: #111111;
+
+  /* ---------- Green ramp = DS brand green ---------- */
+  --color-green-50: #f3f6f3;
+  --color-green-100: #ebf3ef;
+  --color-green-200: #d4e4d5;
+  --color-green-300: #cadacb;
+  --color-green-400: #7fa582;
+  --color-green-500: #338b60;   /* green variant 04 */
+  --color-green-600: #1a6e22;
+  --color-green-700: #135e17;
+  --color-green-800: #0d5611;   /* primary */
+  --color-green-900: #0a420d;   /* pressed */
+  --color-green-950: #072e09;
+
+  /* ---------- Red ramp = DS alert ---------- */
+  --color-red-50: #fcf6f6;
+  --color-red-100: #f8e9e9;
+  --color-red-200: #f5d5d4;
+  --color-red-300: #fb7e7a;
+  --color-red-400: #e2504c;
+  --color-red-500: #c91b1b;   /* brand/red */
+  --color-red-600: #c31212;   /* alert 02 */
+  --color-red-700: #bd2420;   /* alert 01 */
+  --color-red-800: #9c1c19;
+  --color-red-900: #7a1614;
+  --color-red-950: #571110;
+
+  /* rose는 red와 같은 경고 계열로 통일 */
+  --color-rose-50: #fcf6f6;
+  --color-rose-100: #f8e9e9;
+  --color-rose-200: #f5d5d4;
+  --color-rose-300: #fb7e7a;
+  --color-rose-400: #e2504c;
+  --color-rose-500: #c91b1b;
+  --color-rose-600: #c31212;
+  --color-rose-700: #bd2420;
+
+  /* ---------- Amber ramp = DS badge yellow ---------- */
+  --color-amber-50: #fcf7f1;
+  --color-amber-100: #f9eccc;
+  --color-amber-200: #f2dca6;
+  --color-amber-300: #e5c270;
+  --color-amber-400: #d2a33e;
+  --color-amber-500: #ffa600;   /* brand/yellow */
+  --color-amber-600: #a77b18;   /* badge/text-yellow */
+  --color-amber-700: #8a6413;
+  --color-amber-800: #6e4f10;
+  --color-amber-900: #57400e;
+
+  /* orange = DS brand orange / brown */
+  --color-orange-50: #fff3ee;
+  --color-orange-100: #ffe2d6;
+  --color-orange-200: #ffc2ab;
+  --color-orange-300: #ff9a73;
+  --color-orange-400: #ff6a37;
+  --color-orange-500: #ff4100;   /* brand/orange */
+  --color-orange-600: #d63700;
+  --color-orange-700: #96430b;   /* brand/brown */
+  --color-orange-800: #7a3709;
+  --color-orange-900: #5e2b07;
+
+  /* ---------- Blue ramp = DS brand blue ---------- */
+  --color-blue-50: #deeeff;   /* badge/bg-blue */
+  --color-blue-100: #cde4ff;
+  --color-blue-200: #a6ccff;
+  --color-blue-300: #6faaff;
+  --color-blue-400: #287cff;  /* brand/light-blue */
+  --color-blue-500: #0b6bec;
+  --color-blue-600: #005ac3;  /* brand/blue */
+  --color-blue-700: #004a9e;
+  --color-blue-800: #003b7e;
+  --color-blue-900: #002f63;
+
+  /* sky / cyan = DS banner teal 계열 */
+  --color-sky-50: #e8f7f4;
+  --color-sky-100: #c8ebe4;
+  --color-sky-500: #16a085;
+  --color-sky-600: #12866f;
+  --color-sky-700: #0e6b58;
+  --color-cyan-50: #e8f7f4;
+  --color-cyan-100: #c8ebe4;
+  --color-cyan-500: #16a085;
+  --color-cyan-600: #12866f;
+  --color-cyan-700: #0e6b58;
+
+  /* purple = DS member grade 03 */
+  --color-purple-50: #f1ecfc;
+  --color-purple-100: #e2d8f8;
+  --color-purple-500: #764ad5;
+  --color-purple-600: #6239bd;
+  --color-purple-700: #4e2c99;
+}
+
 * {
   -webkit-tap-highlight-color: transparent;
   box-sizing: border-box;
@@ -16,14 +215,25 @@
 body {
   margin: 0;
   padding: 0;
-  background: #f0f0f0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
+  background: #efefef; /* gray/150 */
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: 0;
+  color: #111111; /* text/primary */
   /* 디바이스 프레임을 화면 가운데 배치 (프레임보다 작은 화면은 스크롤) */
   min-height: 100dvh;
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+/* 숫자는 표 정렬이 중요한 화면이 많아 tabular figure 고정 */
+input,
+button,
+select,
+textarea {
+  font-family: inherit;
 }
 
 /* 6인치 디바이스 프레임 — 높이 고정(뷰포트에 반응하지 않음) */
@@ -48,5 +258,161 @@ body {
 @media (max-width: 360px) {
   #root {
     width: 100%;
+  }
+}
+
+/* ============================================================
+   Figma 규격 프리미티브
+   출처: "[AI] 집반찬연구소 리뉴얼" (640AQgEweSAaKFEvY9ws2B)
+         로그인 1:3887 / day 칩 1:5301
+
+   화면마다 버튼·입력·좌우 여백을 제각각 쓰던 것을 여기로 모은다.
+   값을 화면에서 새로 만들지 말고 이 클래스를 쓴다.
+   ============================================================ */
+@layer components {
+  /* 화면 좌우 여백 = spacing-20 (Figma: 콘텐츠 폭 320 / 프레임 360) */
+  .screen-x {
+    padding-inline: 20px;
+  }
+
+  /* button/defualt — h52 · radius 10 · button100-b(Bold 16 / lh 1) */
+  .btn-ds {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 52px;
+    padding-inline: 20px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1;
+    transition: background-color 0.15s, border-color 0.15s;
+  }
+  .btn-ds-primary {
+    background: var(--color-brand);
+    color: #fff;
+  }
+  .btn-ds-primary:active {
+    background: var(--color-brand-press);
+  }
+  .btn-ds-outline {
+    background: #fff;
+    color: var(--color-gray-700);
+    border: 1px solid var(--color-gray-250);
+  }
+  .btn-ds-outline:active {
+    background: var(--color-gray-50);
+  }
+
+  /* input/default — h52 · radius 8 · border grayscale-290 · body400-r */
+  .input-ds {
+    width: 100%;
+    height: 52px;
+    padding-inline: 20px;
+    background: #fff;
+    border: 1px solid var(--color-gray-250);
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--color-gray-950);
+  }
+  .input-ds::placeholder {
+    color: var(--color-gray-400);
+  }
+  .input-ds:focus {
+    outline: none;
+    border-color: var(--color-brand);
+  }
+
+  /* 여러 줄 입력 — input/default 와 같은 테두리·라운드·타이포, 높이만 자유 */
+  .textarea-ds {
+    width: 100%;
+    padding: 15px 20px;
+    background: #fff;
+    border: 1px solid var(--color-gray-250);
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--color-gray-950);
+    resize: none;
+  }
+  .textarea-ds::placeholder {
+    color: var(--color-gray-400);
+  }
+  .textarea-ds:focus {
+    outline: none;
+    border-color: var(--color-brand);
+  }
+
+  /* 소형 입력 — 체크리스트 행 안에 들어가 h52 가 과한 자리.
+     테두리·라운드·타이포만 input/default 와 맞추고 크기는 호출부가 정한다. */
+  .input-ds-sm {
+    background: #fff;
+    border: 1px solid var(--color-gray-250);
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--color-gray-950);
+  }
+  .input-ds-sm::placeholder {
+    color: var(--color-gray-400);
+  }
+  .input-ds-sm:focus {
+    outline: none;
+    border-color: var(--color-brand);
+  }
+
+  /* 검색창 — 아이콘 자리를 왼쪽에 두는 것 말고는 input/default 와 같다.
+     아이콘은 호출부에서 absolute 로 얹는다. */
+  .input-ds-search {
+    width: 100%;
+    height: 44px;
+    padding-left: 40px;
+    padding-right: 36px;
+    background: #fff;
+    border: 1px solid var(--color-gray-250);
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--color-gray-950);
+  }
+  .input-ds-search::placeholder {
+    color: var(--color-gray-400);
+  }
+  .input-ds-search:focus {
+    outline: none;
+    border-color: var(--color-brand);
+  }
+
+  /* 필드 라벨 — subtitle500-b(Bold 16 / lh 1), 라벨↔입력 gap 12 */
+  .field-ds {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .field-ds > label {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-gray-800);
+  }
+
+  /* 칩/탭 — day 1:5301 (radius 8 · 14 Bold · shadow) */
+  .chip-ds {
+    border-radius: 8px;
+    border: 1px solid var(--color-gray-250);
+    background: #fff;
+    color: var(--color-gray-700);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    box-shadow: 0 4px 17px rgb(0 0 0 / 0.05);
+  }
+  .chip-ds[aria-selected='true'],
+  .chip-ds[data-on='true'] {
+    background: var(--color-brand-tonal);
+    border-color: var(--color-brand);
+    color: var(--color-brand);
   }
 }

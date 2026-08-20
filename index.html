@@ -4,6 +4,16 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=360, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <!-- 집반찬연구소 디자인시스템 기본 서체 (Pretendard).
+         @font-face 는 src/index.css 에 있고 폰트는 public/fonts/ 에서 직접 서빙한다.
+         첫 화면 텍스트가 늦지 않도록 폰트 파일만 미리 받아둔다. -->
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      crossorigin
+      href="/fonts/PretendardVariable.woff2"
+    />
     <title>반장용 관리 디바이스</title>
   </head>
   <body>

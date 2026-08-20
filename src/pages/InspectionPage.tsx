@@ -34,16 +34,16 @@ interface KanbanItem {
 }
 
 const INITIAL_KANBANS: KanbanItem[] = [
-  { id: '1', code: 'KB-1001', product: '된장찌개', qty: 30, team: '1반', completedAt: null },
-  { id: '2', code: 'KB-1002', product: '김치찌개', qty: 25, team: '1반', completedAt: null },
-  { id: '3', code: 'KB-1003', product: '불고기', qty: 20, team: '1반', completedAt: null },
-  { id: '4', code: 'KB-1004', product: '제육볶음', qty: 35, team: '2반', completedAt: null },
-  { id: '5', code: 'KB-1005', product: '갈비탕', qty: 15, team: '2반', completedAt: null },
-  { id: '6', code: 'KB-1006', product: '순두부찌개', qty: 28, team: '2반', completedAt: null },
-  { id: '7', code: 'KB-1007', product: '닭볶음탕', qty: 22, team: '3반', completedAt: null },
-  { id: '8', code: 'KB-1008', product: '잡채', qty: 18, team: '3반', completedAt: null },
-  { id: '9', code: 'KB-1009', product: '비빔밥', qty: 40, team: '4반', completedAt: null },
-  { id: '10', code: 'KB-1010', product: '오징어볶음', qty: 12, team: '5반', completedAt: null },
+  { id: '1', code: 'KB-1001', product: '된장찌개', qty: 30, team: '자재반', completedAt: null },
+  { id: '2', code: 'KB-1002', product: '김치찌개', qty: 25, team: '자재반', completedAt: null },
+  { id: '3', code: 'KB-1003', product: '불고기', qty: 20, team: '자재반', completedAt: null },
+  { id: '4', code: 'KB-1004', product: '제육볶음', qty: 35, team: '전처리반', completedAt: null },
+  { id: '5', code: 'KB-1005', product: '갈비탕', qty: 15, team: '전처리반', completedAt: null },
+  { id: '6', code: 'KB-1006', product: '순두부찌개', qty: 28, team: '전처리반', completedAt: null },
+  { id: '7', code: 'KB-1007', product: '닭볶음탕', qty: 22, team: '조리반', completedAt: null },
+  { id: '8', code: 'KB-1008', product: '잡채', qty: 18, team: '조리반', completedAt: null },
+  { id: '9', code: 'KB-1009', product: '비빔밥', qty: 40, team: '내포장반', completedAt: null },
+  { id: '10', code: 'KB-1010', product: '오징어볶음', qty: 12, team: '외포장반', completedAt: null },
 ]
 
 export default function InspectionPage() {
@@ -158,28 +158,28 @@ export default function InspectionPage() {
 
   return (
     <div className="relative flex flex-col bg-gray-50 min-h-full">
-      <TopBar title="검수" />
+      <TopBar title="검수" showBack backTo="/menu" />
 
       {/* 통계 */}
       <div className="flex gap-3 px-4 py-3 bg-white border-b border-gray-100">
         <div className="flex-1 text-center py-2">
           <p className="text-2xl font-bold text-orange-500">{pending.length}</p>
-          <p className="text-[11px] text-gray-400 mt-0.5">대기</p>
+          <p className="text-[16px] text-gray-400 mt-0.5">대기</p>
         </div>
         <div className="w-px bg-gray-100" />
         <div className="flex-1 text-center py-2">
           <p className="text-2xl font-bold text-green-800">{done.length}</p>
-          <p className="text-[11px] text-gray-400 mt-0.5">완료</p>
+          <p className="text-[16px] text-gray-400 mt-0.5">완료</p>
         </div>
         <div className="w-px bg-gray-100" />
         <div className="flex-1 text-center py-2">
           <p className="text-2xl font-bold text-gray-700">{items.length}</p>
-          <p className="text-[11px] text-gray-400 mt-0.5">전체</p>
+          <p className="text-[16px] text-gray-400 mt-0.5">전체</p>
         </div>
       </div>
 
       {/* 스캔 영역 */}
-      <div className="px-4 pt-4 pb-2">
+      <div className="screen-x pt-4 pb-2">
         <button
           type="button"
           onClick={() => inputRef.current?.focus()}
@@ -227,7 +227,7 @@ export default function InspectionPage() {
       </div>
 
       {/* 목록 */}
-      <div className="px-4 pb-4 space-y-2">
+      <div className="screen-x pb-4 space-y-2">
         {displayed.length === 0 && (
           <p className="text-center text-gray-400 text-sm mt-10">
             {tab === 'pending' ? '대기 중인 간반이 없습니다' : '완료된 간반이 없습니다'}
@@ -255,7 +255,7 @@ export default function InspectionPage() {
                 <p className="font-bold text-gray-900 text-sm truncate">{item.product}</p>
                 {item.completedAt && item.result && (
                   <span
-                    className={`shrink-0 px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
+                    className={`shrink-0 px-1.5 py-0.5 rounded-md text-[14px] font-bold ${
                       item.result === 'reject'
                         ? 'bg-red-100 text-red-600'
                         : 'bg-green-100 text-green-700'
@@ -318,8 +318,8 @@ export default function InspectionPage() {
               <ChevronLeft size={24} strokeWidth={2} />
             </button>
             <div className="flex-1 text-center">
-              <p className="text-[16px] font-bold text-gray-900">{inspecting.product}</p>
-              <p className="text-[11px] text-gray-400">
+              <p className="text-[21px] font-bold text-gray-900">{inspecting.product}</p>
+              <p className="text-[16px] text-gray-400">
                 {inspecting.code} · {inspecting.qty}개 · {inspecting.team}
               </p>
             </div>
@@ -370,7 +370,7 @@ export default function InspectionPage() {
                   onChange={(e) => setPassNote(e.target.value)}
                   placeholder="의견을 자유롭게 기록하세요"
                   rows={4}
-                  className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm resize-none focus:outline-none focus:border-green-800"
+                  className="textarea-ds"
                 />
               </div>
             )}
@@ -424,7 +424,7 @@ export default function InspectionPage() {
                           }`}
                         >
                           <span className="text-sm font-bold">{r.type}</span>
-                          <span className={`text-[11px] leading-tight ${rejectType === r.type ? 'text-green-100' : 'text-gray-400'}`}>
+                          <span className={`text-[16px] leading-tight ${rejectType === r.type ? 'text-green-100' : 'text-gray-400'}`}>
                             {r.desc}
                           </span>
                         </button>
@@ -449,7 +449,7 @@ export default function InspectionPage() {
                       onChange={(e) => setRejectText(e.target.value)}
                       placeholder={selectedReason?.requireText ? '기타 사유를 서술하세요' : '불합격 사유를 입력하세요'}
                       rows={3}
-                      className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm resize-none focus:outline-none focus:border-green-800"
+                      className="textarea-ds"
                     />
                   </div>
                 )}

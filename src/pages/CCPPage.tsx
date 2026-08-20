@@ -3,7 +3,7 @@ import TopBar from '@/components/TopBar'
 import { CheckCircle2, Clock, AlertCircle, ChevronLeft, Bell, Camera, X } from 'lucide-react'
 import { useCCPStore } from '@/store/ccpStore'
 import type { CCPKind } from '@/store/ccpStore'
-import { CCP_CHECK_ITEMS } from '@/constants/ccpData'
+import { getCCPCheckItems } from '@/constants/ccpData'
 
 type CCPStatus = 'upcoming' | 'active' | 'done' | 'missed'
 
@@ -55,15 +55,20 @@ function buildTodaySchedules(
 // 실제 점검 기록은 MES v2 API에서 내려온다(추후 연동). 지금은 메뉴를 만져볼 수
 // 있도록, 예정 시각이 이미 지난 슬롯 대부분을 그럴듯한 점검값과 함께 완료 처리하고
 // 일부는 '미진행'으로 남겨 완료/미진행/진행가능/예정이 고루 보이게 한다.
-function sampleValues(seed: number): Record<string, string> {
-  return {
-    'heat-temp': String(76 + (seed % 8)), // 76~83℃
-    'heat-time': String(2 + (seed % 3)), // 2~4분
-    'sanitizer-conc': String(90 + (seed % 21)), // 90~110ppm
-    'wash-state': '양호',
-    'sanitize-state': seed % 6 === 0 ? '불량' : '양호',
-    'tool-clean': '양호',
-  }
+// 유형마다 점검 항목이 다르므로(= mes-v2 CCP 설정에서 유형별로 정의) 그 유형의
+// 항목에 맞는 값만 채운다. 숫자 항목은 seed 로 흔들고, 선택형은 대부분 첫 보기(양호/정상).
+function sampleValues(typeName: string, seed: number): Record<string, string> {
+  const out: Record<string, string> = {}
+  getCCPCheckItems(typeName).forEach((item, idx) => {
+    if (item.options) {
+      out[item.id] = (seed + idx) % 7 === 0 ? item.options[item.options.length - 1] : item.options[0]
+      return
+    }
+    const base = Number((item.placeholder ?? '').replace(/[^\d.]/g, '')) || 10
+    const jitter = (seed + idx) % 5
+    out[item.id] = String(Math.round((base + jitter) * 10) / 10)
+  })
+  return out
 }
 
 function seedDemoRecords(
@@ -80,7 +85,7 @@ function seedDemoRecords(
     const late = i % 4 === 1
     const offsetMin = late ? 40 + (i % 5) * 8 : 3 + (i % 10)
     const completedAt = new Date(t.scheduledAt.getTime() + offsetMin * 60 * 1000)
-    taskValues[t.id] = sampleValues(i)
+    taskValues[t.id] = sampleValues(t.type, i)
     return { ...t, completedAt }
   })
 
@@ -188,12 +193,12 @@ export default function CCPPage() {
   const [values, setValues] = useState<Record<string, string>>({})
   const [note, setNote] = useState('')
   const [formToast, setFormToast] = useState('')
-  const [taskValues, setTaskValues] = useState<Record<string, Record<string, string>>>(
+  const [_taskValues, setTaskValues] = useState<Record<string, Record<string, string>>>(
     () => seedRef.current!.taskValues
   )
   // 사진 촬영 — 현재 입력 중 사진(dataURL) 및 완료된 점검별 사진 보관
   const [photos, setPhotos] = useState<string[]>([])
-  const [taskPhotos, setTaskPhotos] = useState<Record<string, string[]>>({})
+  const [_taskPhotos, setTaskPhotos] = useState<Record<string, string[]>>({})
   const photoInputRef = useRef<HTMLInputElement>(null)
 
   const addPhotos = (files: FileList | null) => {
@@ -233,9 +238,15 @@ export default function CCPPage() {
     prevAlarmKeyRef.current = key
   }, [dueAlarms])
 
+  // 점검 항목은 유형마다 다르다 (mes-v2 /system/ccp 에서 유형별로 관리).
+  const formItems = useMemo(() => {
+    const task = tasks.find((t) => t.id === completing)
+    return task ? getCCPCheckItems(task.type) : []
+  }, [tasks, completing])
+
   const missingRequired = useMemo(
-    () => CCP_CHECK_ITEMS.filter((it) => it.required && !values[it.id]?.trim()),
-    [values]
+    () => formItems.filter((it) => it.required && !values[it.id]?.trim()),
+    [formItems, values]
   )
 
   const resetForm = () => {
@@ -292,8 +303,8 @@ export default function CCPPage() {
             <ChevronLeft size={24} strokeWidth={2} />
           </button>
           <div className="flex-1 text-center">
-            <p className="text-[16px] font-bold text-gray-900">{completingTask.type}</p>
-            <p className="text-[11px] text-gray-400">{completingTask.location}</p>
+            <p className="text-[21px] font-bold text-gray-900">{completingTask.type}</p>
+            <p className="text-[16px] text-gray-400">{completingTask.location}</p>
           </div>
           <div className="w-8" />
         </div>
@@ -308,7 +319,7 @@ export default function CCPPage() {
               </span>
             </div>
             <div className="p-4 space-y-4">
-              {CCP_CHECK_ITEMS.map((item) => {
+              {formItems.map((item) => {
                 const val = values[item.id] ?? ''
                 return (
                   <div key={item.id}>
@@ -337,7 +348,7 @@ export default function CCPPage() {
                         ))}
                       </div>
                     ) : (
-                      <div className="flex items-center border border-gray-200 rounded-xl px-3 focus-within:border-green-800">
+                      <div className="flex items-center border border-gray-250 rounded-lg px-4 h-[52px] focus-within:border-green-800">
                         <input
                           value={val}
                           onChange={(e) => setValues((p) => ({ ...p, [item.id]: e.target.value }))}
@@ -389,7 +400,7 @@ export default function CCPPage() {
                 className="aspect-square rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 active:bg-gray-50"
               >
                 <Camera size={22} />
-                <span className="text-[11px] mt-1 font-bold">촬영</span>
+                <span className="text-[16px] mt-1 font-bold">촬영</span>
               </button>
             </div>
           </div>
@@ -402,7 +413,7 @@ export default function CCPPage() {
               onChange={(e) => setNote(e.target.value)}
               placeholder="특이사항을 입력하세요"
               rows={4}
-              className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm resize-none focus:outline-none focus:border-green-800"
+              className="textarea-ds"
             />
           </div>
         </div>
@@ -415,12 +426,12 @@ export default function CCPPage() {
 
         <div className="shrink-0 px-4 pt-3 pb-6 bg-white border-t border-gray-100">
           {missingRequired.length > 0 && (
-            <p className="text-[11px] text-gray-400 text-center mb-2">필수 항목 {missingRequired.length}개를 입력해야 완료할 수 있습니다</p>
+            <p className="text-[16px] text-gray-400 text-center mb-2">필수 항목 {missingRequired.length}개를 입력해야 완료할 수 있습니다</p>
           )}
           <button
             onClick={() => handleComplete(completing)}
             disabled={missingRequired.length > 0}
-            className={`w-full py-4 font-bold rounded-2xl text-[15px] ${
+            className={`w-full py-4 font-bold rounded-2xl text-[19px] ${
               missingRequired.length > 0
                 ? 'bg-gray-200 text-gray-400'
                 : 'bg-green-900 text-white active:bg-green-800'
@@ -435,7 +446,7 @@ export default function CCPPage() {
 
   return (
     <div className="relative h-full flex flex-col bg-gray-50 overflow-hidden">
-      <TopBar title="CCP 점검" />
+      <TopBar title="CCP 점검" showBack backTo="/menu" />
 
       {/* 요약 — 스크롤 안 되는 상단 고정 영역 */}
       <div className="flex bg-white border-b border-gray-100 shrink-0">
@@ -446,14 +457,14 @@ export default function CCPPage() {
         ].map(({ label, count, cls }, i) => (
           <div key={label} className={`flex-1 text-center py-4 ${i < 2 ? 'border-r border-gray-100' : ''}`}>
             <p className={`text-2xl font-bold ${cls}`}>{count}</p>
-            <p className="text-[11px] text-gray-400 mt-0.5">{label}</p>
+            <p className="text-[16px] text-gray-400 mt-0.5">{label}</p>
           </div>
         ))}
       </div>
 
       {/* 스크롤 가능한 목록 영역 */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-        <p className="text-xs font-bold text-gray-400">오늘 CCP 점검 일정 (반별 · 주기 자동 생성)</p>
+        <p className="text-xs font-bold text-gray-400">오늘 CCP 점검 일정</p>
 
         {tasks.map((task) => {
           const status = statuses[task.id]
@@ -470,7 +481,7 @@ export default function CCPPage() {
                     {status === 'active' && <CheckCircle2 size={14} className="text-green-600 shrink-0" />}
                     {status === 'upcoming' && <Clock size={14} className="text-gray-400 shrink-0" />}
                     {status === 'missed' && <AlertCircle size={14} className="text-red-400 shrink-0" />}
-                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border shrink-0 ${KIND_UI[task.kind].cls}`}>
+                    <span className={`text-[14px] font-bold px-1.5 py-0.5 rounded border shrink-0 ${KIND_UI[task.kind].cls}`}>
                       {task.kind}
                     </span>
                     <p className="text-sm font-bold text-gray-900 truncate">{task.type}</p>
@@ -484,7 +495,7 @@ export default function CCPPage() {
                 </div>
                 <div className="flex flex-col items-end gap-1.5 ml-3 shrink-0">
                   <span
-                    className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${
+                    className={`text-[16px] font-bold px-2.5 py-1 rounded-full ${
                       late ? 'bg-amber-100 text-amber-700' : ui.labelCls
                     }`}
                   >
@@ -533,12 +544,12 @@ export default function CCPPage() {
                   onClick={() => openForm(t.id)}
                   className="w-full flex items-center gap-2 px-4 py-3 rounded-2xl border border-gray-200 text-left active:bg-gray-50"
                 >
-                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border shrink-0 ${KIND_UI[t.kind].cls}`}>
+                  <span className={`text-[14px] font-bold px-1.5 py-0.5 rounded border shrink-0 ${KIND_UI[t.kind].cls}`}>
                     {t.kind}
                   </span>
                   <span className="flex-1 min-w-0">
                     <span className="block text-sm font-bold text-gray-900 truncate">{t.type}</span>
-                    <span className="block text-[11px] text-gray-400">{t.location} · 예정 {fmtTime(t.scheduledAt)}</span>
+                    <span className="block text-[16px] text-gray-400">{t.location} · 예정 {fmtTime(t.scheduledAt)}</span>
                   </span>
                   <span className="text-xs font-bold text-green-800 shrink-0">점검 →</span>
                 </button>

@@ -82,15 +82,15 @@ function ListStep({
 
   return (
     <div className="flex flex-col bg-gray-50 min-h-full">
-      <TopBar title="현장 점검" />
+      <TopBar title="현장 점검" showBack backTo="/menu" />
 
-      {/* 현장 점검(점표) / HACCP 점검표 탭 */}
+      {/* 현장점검표 / HACCP 점검표 탭 */}
       <div className="flex px-4 pt-3 gap-2">
-        {([['closing', '점표 점검'], ['haccp', 'HACCP 점검표']] as const).map(([k, label]) => (
+        {([['closing', '현장점검표'], ['haccp', 'HACCP 점검표']] as const).map(([k, label]) => (
           <button
             key={k}
             onClick={() => setTab(k)}
-            className={`flex-1 py-2.5 rounded-xl text-[13px] font-bold border transition-colors ${
+            className={`flex-1 py-2.5 rounded-xl text-[17px] font-bold border transition-colors ${
               tab === k ? 'bg-green-900 text-white border-green-900' : 'bg-white text-gray-500 border-gray-200'
             }`}
           >
@@ -102,11 +102,11 @@ function ListStep({
       {tab === 'haccp' && <HaccpChecklists />}
 
       {tab === 'closing' && (
-      <div className="px-4 py-4 space-y-3">
+      <div className="screen-x py-4 space-y-3">
         {/* QR 스캔 진입 */}
         <button
           onClick={startScan}
-          className="w-full flex items-center justify-center gap-2 py-4 bg-green-900 text-white rounded-2xl text-[15px] font-bold active:bg-green-800"
+          className="w-full flex items-center justify-center gap-2 py-4 bg-green-900 text-white rounded-2xl text-[19px] font-bold active:bg-green-800"
         >
           <ScanLine size={18} />
           QR 스캔하기
@@ -126,7 +126,7 @@ function ListStep({
         )}
 
         <div className="flex items-center justify-between px-1">
-          <p className="text-xs font-bold text-gray-400">점표 목록 (QR 스캔 시 활성화)</p>
+          <p className="text-xs font-bold text-gray-400">점표 목록</p>
           <p className="text-xs font-bold text-gray-500">{doneCount}/{CHECKPOINTS.length} 완료</p>
         </div>
 
@@ -148,7 +148,7 @@ function ListStep({
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-gray-900 truncate">{cp.name}</p>
-                    <p className="text-[11px] text-gray-400 truncate">{cp.location} · {cp.qrCode}</p>
+                    <p className="text-[16px] text-gray-400 truncate">{cp.location} · {cp.qrCode}</p>
                   </div>
                   {done ? (
                     <button
@@ -253,11 +253,11 @@ function FormStep({
             <ChevronLeft size={24} strokeWidth={2} />
           </button>
           <div className="flex-1 text-center">
-            <p className="text-[16px] font-bold text-gray-900">
+            <p className="text-[21px] font-bold text-gray-900">
               {checkpoint.name}
               {selectedPhase && <span className="text-gray-400 font-medium"> · {selectedPhase}</span>}
             </p>
-            <p className="text-[11px] text-gray-400">{answeredItems}/{totalItems} 완료 · {checkpoint.qrCode}</p>
+            <p className="text-[16px] text-gray-400">{answeredItems}/{totalItems} 완료 · {checkpoint.qrCode}</p>
           </div>
           <div className="w-8" />
         </div>
@@ -267,7 +267,7 @@ function FormStep({
       <div className="flex-1 overflow-y-auto pb-4">
         {selectedPhase === null ? (
           /* ── 단계 선택 박스 (작업전 / 작업중 / 작업후) ── */
-          <div className="px-4 pt-4 pb-1 space-y-2.5">
+          <div className="screen-x pt-4 pb-1 space-y-2.5">
             <p className="text-xs font-bold text-gray-400 mb-1">점검할 단계를 선택하세요</p>
             {WORK_PHASES.map((p) => {
               const its = itemsOfPhase(p)
@@ -385,14 +385,14 @@ function FormStep({
         <div className="shrink-0 px-4 pt-3 pb-6 bg-white border-t border-gray-100 flex gap-2">
           <button
             onClick={onCancel}
-            className="flex-none px-5 py-4 border border-gray-300 text-gray-600 rounded-2xl text-[15px] font-bold active:bg-gray-50"
+            className="flex-none px-5 py-4 border border-gray-300 text-gray-600 rounded-2xl text-[19px] font-bold active:bg-gray-50"
           >
             취소
           </button>
           <button
             onClick={onSubmit}
             disabled={submitting}
-            className="flex-1 py-4 bg-green-900 disabled:bg-gray-300 text-white rounded-2xl text-[15px] font-bold active:bg-green-800"
+            className="flex-1 py-4 bg-green-900 disabled:bg-gray-300 text-white rounded-2xl text-[19px] font-bold active:bg-green-800"
           >
             {submitting ? '제출 중...' : '점검 완료'}
           </button>
