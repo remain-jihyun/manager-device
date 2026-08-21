@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { ClipboardCheck, ShieldCheck, MapPin, UserPlus, Trash2, Package, Truck, Bug, Magnet, Scale, Boxes } from 'lucide-react'
+import { ClipboardCheck, ShieldCheck, MapPin, UserPlus, Trash2, Package, Truck, Bug, Magnet, Scale, Boxes, Waves } from 'lucide-react'
 import { useBadgeStore } from '@/store/badgeStore'
 import { isMember, useAuthStore } from '@/store/authStore'
 import { MEMBER_PATHS } from '@/constants/deviceMenu'
@@ -38,6 +38,7 @@ const MENU_GROUPS: { title: string; items: { path: string; icon: typeof Clipboar
       { path: '/andon/foreign', icon: Bug, label: '이물 안돈' },
       { path: '/andon/metal', icon: Magnet, label: '금속검출기 안돈' },
       { path: '/andon/weight', icon: Scale, label: '중량 선별기 안돈' },
+      { path: '/andon/spiral', icon: Waves, label: '스파이럴 안돈' },
     ],
   },
 ]

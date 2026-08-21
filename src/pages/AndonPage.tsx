@@ -13,12 +13,14 @@ import TopBar from '@/components/TopBar'
 import { isOffice, useAuthStore } from '@/store/authStore'
 import {
   useAndonStore,
+  openEventsOfType,
   reportedEventsOfType,
   confirmedEventsOfType,
 } from '@/store/andonStore'
 import {
   ANDON_SLUG_TO_TYPE,
   fetchAndonEventDetail,
+  reportAndonEvent,
   type AndonEvent,
   type AndonJudgement,
 } from '@/api/andon'
@@ -39,8 +41,9 @@ const hhmm = (iso: string) =>
  * 안돈 화면.
  *
  * 반장(카카오 로그인)
- *   화면에 발생 내역을 늘어놓지 않는다. 안돈은 현장에서 눈으로 본다.
- *   단말에서는 **[이슈 올리기]** 하나로 끝난다 — 바코드 스캔 → 사진 → 내용 → 저장.
+ *   눈으로 본 안돈은 **[이슈 올리기]** 하나로 끝난다 — 바코드 스캔 → 사진 → 내용 → 저장.
+ *   설비가 스스로 올린 발생 건(스파이럴 수량 차이 등)은 **1차 확인** 카드로 뜬다.
+ *   보고 결과가 이상 없음이면 거기서 닫고, 진짜 이상일 때만 관리자로 에스컬레이션한다.
  *
  * 사무관리자(이메일 로그인)
  *   올라온 이슈를 **확인 / 이슈 있음(메모)** 으로 종결한다.
@@ -55,6 +58,8 @@ export default function AndonPage() {
 
   const [issueOpen, setIssueOpen] = useState(false)
   const [confirmTarget, setConfirmTarget] = useState<AndonEvent | null>(null)
+  // 1차 확인 처리 중인 발생 건 id — 버튼 중복 클릭을 막는다
+  const [closing, setClosing] = useState<string | null>(null)
 
   useEffect(() => {
     refresh()
@@ -69,6 +74,26 @@ export default function AndonPage() {
     () => (typeId ? confirmedEventsOfType(events, typeId) : []),
     [events, typeId]
   )
+  /** 설비가 올린 발생 건 — 반장 1차 확인 대기 */
+  const open = useMemo(
+    () => (typeId ? openEventsOfType(events, typeId) : []),
+    [events, typeId]
+  )
+
+  /** 1차 확인 결과 "이상 없음" — 반장 선에서 닫는다(에스컬레이션하지 않는다) */
+  const reportNormal = async (e: AndonEvent) => {
+    setClosing(e.id)
+    try {
+      await reportAndonEvent(e.id, {
+        reportedBy: user?.name ?? '반장',
+        finding: 'NORMAL',
+        note: '반장 1차 확인 — 이상 없음',
+      })
+      await refresh()
+    } finally {
+      setClosing(null)
+    }
+  }
 
   if (!typeId) return <Navigate to="/menu" replace />
 
@@ -157,12 +182,57 @@ export default function AndonPage() {
               <span className="text-[22px] font-bold">이슈 올리기</span>
               <span className="text-[16px] opacity-90">바코드 · 사진 · 내용</span>
             </button>
-            <p className="text-[16px] text-gray-400 text-center mt-3 leading-relaxed">
-              현장에서 확인한 이슈를 올리면 사무관리자가 확인합니다.
-              <br />
-              확인 완료 처리는 사무관리자만 합니다.
-            </p>
           </div>
+
+          {/* 설비가 올린 발생 건 — 반장이 현장에서 1차 확인한다.
+              이상 없으면 여기서 닫고, 진짜 이상일 때만 관리자로 올린다. */}
+          {open.length > 0 && (
+            <div className="screen-x pt-6">
+              <div className="flex items-center justify-between mb-2 px-1">
+                <p className="text-xs font-bold text-gray-400">발생 · 1차 확인</p>
+                <span className="text-xs font-bold text-red-500">{open.length}건</span>
+              </div>
+              <div className="space-y-2.5">
+                {open.map((e) => (
+                  <div key={e.id} className="rounded-2xl border border-red-300 bg-red-50 px-4 py-3.5">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <AlertTriangle size={15} className="shrink-0 text-red-600" />
+                        <p className="text-sm font-bold text-gray-800 truncate">{e.equipment}</p>
+                      </div>
+                      <p className="text-[16px] font-bold text-gray-500 shrink-0 tabular-nums">
+                        {hhmm(e.occurredAt)}
+                      </p>
+                    </div>
+
+                    <p className="mb-2 rounded-xl bg-white px-3 py-2.5 text-sm text-gray-800">
+                      {e.detail}
+                    </p>
+                    <p className="mb-2.5 text-[16px] text-gray-500 tabular-nums">
+                      {e.metricLabel} {e.metricValue}
+                      {e.metricUnit} · 기준 {e.spec}
+                    </p>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => void reportNormal(e)}
+                        disabled={closing === e.id}
+                        className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-gray-300 bg-white py-3 text-sm font-bold text-gray-700 active:bg-gray-100 disabled:opacity-50"
+                      >
+                        <CheckCircle2 size={15} /> 이상 없음
+                      </button>
+                      <button
+                        onClick={() => setIssueOpen(true)}
+                        className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-red-500 py-3 text-sm font-bold text-white active:bg-red-600"
+                      >
+                        <Upload size={15} /> 에스컬레이션
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="screen-x pt-6">
             <div className="flex items-center justify-between mb-2 px-1">

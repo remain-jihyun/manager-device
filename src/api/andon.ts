@@ -7,7 +7,7 @@ import { serverRoleOf, useAuthStore } from '@/store/authStore'
 export const MES_API_BASE =
   (import.meta.env['VITE_MES_API_BASE'] as string | undefined) ?? 'http://localhost:4000'
 
-export type AndonTypeId = 'FOREIGN_MATTER' | 'METAL_DETECTOR' | 'WEIGHT_SORTER'
+export type AndonTypeId = 'FOREIGN_MATTER' | 'METAL_DETECTOR' | 'WEIGHT_SORTER' | 'SPIRAL'
 
 /**
  * 안돈 처리 흐름 (2026-08-10 정책)
@@ -97,12 +97,14 @@ export const ANDON_SLUG_TO_TYPE: Record<string, AndonTypeId> = {
   foreign: 'FOREIGN_MATTER',
   metal: 'METAL_DETECTOR',
   weight: 'WEIGHT_SORTER',
+  spiral: 'SPIRAL',
 }
 
 export const ANDON_TYPE_TO_SLUG: Record<AndonTypeId, string> = {
   FOREIGN_MATTER: 'foreign',
   METAL_DETECTOR: 'metal',
   WEIGHT_SORTER: 'weight',
+  SPIRAL: 'spiral',
 }
 
 /** 로그인 수단으로 정해진 역할을 그대로 서버 권한 헤더로 보낸다. */
@@ -164,6 +166,27 @@ export const createAndonIssue = (body: {
   photos: string[]
 }) =>
   request<{ event: AndonEvent }>('/issues', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+
+/**
+ * 1단계(설비 발생 건) — 반장의 **현장 1차 확인 보고**.
+ * 스파이럴처럼 설비가 스스로 올린 안돈은 발생 건이 이미 있으므로 그 건에 결과를 붙인다.
+ *   NORMAL   이상 없음 — 메모만으로 된다
+ *   ABNORMAL 진짜 이상 — 바코드·사진이 필요하다(관리자 에스컬레이션)
+ */
+export const reportAndonEvent = (
+  id: string,
+  body: {
+    reportedBy: string
+    finding: AndonFinding
+    barcode?: string
+    note?: string
+    photos?: string[]
+  }
+) =>
+  request<{ event: AndonEvent }>(`/events/${id}/report`, {
     method: 'POST',
     body: JSON.stringify(body),
   })

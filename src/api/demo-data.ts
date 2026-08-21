@@ -192,6 +192,18 @@ const ANDON_TYPES: AndonType[] = [
     spec: '300g ± 9g',
     requirePhoto: true,
   },
+  {
+    // 상단 출고 수량과 하단 입고 수량 차이가 10분 이상 이어지면 열린다
+    id: 'SPIRAL',
+    label: '스파이럴',
+    line: '외포장반',
+    equipment: '스파이럴 컨베이어',
+    detail: '상·하단 수량 차이 지속',
+    metricLabel: '상단 출고 − 하단 입고',
+    metricUnit: '개',
+    spec: '차이 0개 · 10분 이상 지속 시 발생',
+    requirePhoto: true,
+  },
 ]
 
 /** 백엔드 없이 화면 흐름만 볼 때 쓰는 자리표시 이미지 (실제 사진이 아님을 그림에 적어둔다) */

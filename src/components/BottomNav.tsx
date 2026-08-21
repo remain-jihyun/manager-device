@@ -6,7 +6,7 @@ import { isMember, useAuthStore } from '@/store/authStore'
 const MENU_PATHS = [
   '/inspection', '/ccp', '/closing', '/register', '/chat', '/disposal',
   '/inventory', '/receiving', '/consumables',
-  '/andon/foreign', '/andon/metal', '/andon/weight',
+  '/andon/foreign', '/andon/metal', '/andon/weight', '/andon/spiral',
   '/menu',
 ]
 
